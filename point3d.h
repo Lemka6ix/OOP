@@ -10,5 +10,5 @@ struct point3d {
     double getBackX() const;
     double getBackY() const;
     double getBackZ() const;
-}
-#endif
+};
+#endif 
