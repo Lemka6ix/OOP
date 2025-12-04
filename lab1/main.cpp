@@ -1,11 +1,28 @@
+/**
+ * @file main.cpp
+ * @brief Основная программа для генерации и управления точками на торе
+ * @author Клим
+ * 
+ * Программа предоставляет интерактивное меню для работы с точками на поверхности тора:
+ * - Генерация случайных точек
+ * - Просмотр и добавление точек
+ * - Сохранение и загрузка данных
+ */
+
 #include "torus_points.hpp"
 #include <limits>
 
+/**
+ * @brief Главная функция программы
+ * @return 0 при успешном завершении, 1 при ошибке
+ * 
+ * Функция реализует основной цикл программы с интерактивным меню для управления точками тора
+ */
 int main() {
-    point3d* points = nullptr;  // Указатель на массив точек
-    int pointCount = 0;          // Количество точек в массиве
-    int arraySize = 0;           // Размер выделенной памяти
-    int choice;
+    point3d* points = nullptr;  ///< Указатель на динамический массив точек
+    int pointCount = 0;          ///< Текущее количество точек в массиве
+    int arraySize = 0;           ///< Размер выделенной памяти для массива
+    int choice;                  ///< Выбор пользователя в меню
     
     std::cout << "=== Torus Points Generator (Upper Half) ===" << std::endl;
     
@@ -31,15 +48,15 @@ int main() {
     
     // Основной цикл меню
     do {
-        std::cout << "1. Fill the array with random points" << std::endl;  //Заполнить массив случайными точками
-        std::cout << "2. Show i point" << std::endl;                       //Показать i-ю точку
-        std::cout << "3. Show the point coordinate" << std::endl;          //Показать координату точки
-        std::cout << "4. Add a point manually" << std::endl;               //Добавить точку вручную
-        std::cout << "5. Write an array to a file" << std::endl;           //Записать массив в файл
-        std::cout << "6. Show area parameters" << std::endl;               //Показать параметры области
-        std::cout << "7. Write the parameters to a file" << std::endl;     //Записать параметры в файл
-        std::cout << "8. Download parameters from a file" << std::endl;    //Загрузить параметры из файла
-        std::cout << "0. Exit" << std::endl;
+        std::cout << "1. Fill the array with random points" << std::endl;  ///< Заполнить массив случайными точками
+        std::cout << "2. Show i point" << std::endl;                       ///< Показать i-ю точку
+        std::cout << "3. Show the point coordinate" << std::endl;          ///< Показать координату точки
+        std::cout << "4. Add a point manually" << std::endl;               ///< Добавить точку вручную
+        std::cout << "5. Write an array to a file" << std::endl;           ///< Записать массив в файл
+        std::cout << "6. Show area parameters" << std::endl;               ///< Показать параметры области
+        std::cout << "7. Write the parameters to a file" << std::endl;     ///< Записать параметры в файл
+        std::cout << "8. Download parameters from a file" << std::endl;    ///< Загрузить параметры из файла
+        std::cout << "0. Exit" << std::endl;                               ///< Выход из программы
         std::cout << "Select an action: ";
         std::cin >> choice;
         
