@@ -15,7 +15,7 @@ def read_points_from_file(filename):
                     continue
     return np.array(points)
 
-def create_torus_surface(R=5.0, r=2.0):
+def create_torus_surface(R, r):
     """Создание поверхности тора для визуализации"""
     u = np.linspace(0, 2 * np.pi, 50)
     v = np.linspace(0, np.pi, 25)  # Только верхняя половина
@@ -29,7 +29,7 @@ def create_torus_surface(R=5.0, r=2.0):
 
 def read_settings_from_file(filename="setting.dat"):
     """Чтение параметров тора из файла настроек"""
-    R, r = 5.0, 2.0  # значения по умолчанию
+    R, r = 0.0, 0.0
     try:
         with open(filename, 'r') as f:
             for line in f:
@@ -38,7 +38,13 @@ def read_settings_from_file(filename="setting.dat"):
                 elif line.startswith("r="):
                     r = float(line.strip()[2:])
     except FileNotFoundError:
-        print(f"Файл {filename} не найден, используются значения по умолчанию")
+        print(f"Файл {filename} не найден!")
+        return None, None
+    
+    if R <= 0 or r <= 0:
+        print("Ошибка: параметры тора не заданы или некорректны в файле setting.dat")
+        return None, None
+    
     return R, r
 
 def visualize_points():
@@ -52,61 +58,33 @@ def visualize_points():
     
     # Чтение параметров тора
     R, r = read_settings_from_file()
+    if R is None or r is None:
+        print("Невозможно визуализировать: параметры тора не заданы")
+        return
     
     # Создание фигуры
-    fig = plt.figure(figsize=(14, 10))
+    fig = plt.figure(figsize=(10, 8))
     
     # 3D визуализация
-    ax1 = fig.add_subplot(221, projection='3d')
+    ax = fig.add_subplot(111, projection='3d')
     
     # Создание поверхности тора
     X, Y, Z = create_torus_surface(R, r)
     
     # Отображение поверхности (полупрозрачной)
-    ax1.plot_surface(X, Y, Z, alpha=0.3, color='blue', rstride=1, cstride=1, label='Поверхность тора')
+    ax.plot_surface(X, Y, Z, alpha=0.3, color='blue', rstride=1, cstride=1, label='Поверхность тора')
     
     # Отображение точек
     if len(points) > 0:
-        scatter = ax1.scatter(points[:, 0], points[:, 1], points[:, 2], 
+        ax.scatter(points[:, 0], points[:, 1], points[:, 2], 
                    c='red', s=10, alpha=0.6, label='Сгенерированные точки')
     
-    ax1.set_xlabel('X')
-    ax1.set_ylabel('Y')
-    ax1.set_zlabel('Z')
-    ax1.set_title(f'3D визуализация точек в торе (R={R}, r={r})')
-    ax1.legend()
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.set_title(f'Точки в верхней половине тора (R={R}, r={r})')
+    ax.legend()
     
-    # Проекция на плоскость XY
-    ax2 = fig.add_subplot(222)
-    if len(points) > 0:
-        ax2.scatter(points[:, 0], points[:, 1], c='red', s=10, alpha=0.6)
-    ax2.set_xlabel('X')
-    ax2.set_ylabel('Y')
-    ax2.set_title('Проекция на плоскость XY')
-    ax2.grid(True, alpha=0.3)
-    ax2.axis('equal')
-    
-    # Проекция на плоскость XZ
-    ax3 = fig.add_subplot(223)
-    if len(points) > 0:
-        ax3.scatter(points[:, 0], points[:, 2], c='red', s=10, alpha=0.6)
-    ax3.set_xlabel('X')
-    ax3.set_ylabel('Z')
-    ax3.set_title('Проекция на плоскость XZ')
-    ax3.grid(True, alpha=0.3)
-    ax3.axis('equal')
-    
-    # Проекция на плоскость YZ
-    ax4 = fig.add_subplot(224)
-    if len(points) > 0:
-        ax4.scatter(points[:, 1], points[:, 2], c='red', s=10, alpha=0.6)
-    ax4.set_xlabel('Y')
-    ax4.set_ylabel('Z')
-    ax4.set_title('Проекция на плоскость YZ')
-    ax4.grid(True, alpha=0.3)
-    ax4.axis('equal')
-    
-    plt.tight_layout()
     plt.show()
     
     # Статистика

@@ -2,28 +2,32 @@
 #include <limits>
 
 int main() {
-    TorusPointGenerator generator;
-    std::vector<point3d> points;
+    point3d* points = nullptr;  // Указатель на массив точек
+    int pointCount = 0;          // Количество точек в массиве
+    int arraySize = 0;           // Размер выделенной памяти
     int choice;
     
-    std::cout << "=== The point generator in the upper half of the torus ===" << std::endl;
+    std::cout << "=== Torus Points Generator (Upper Half) ===" << std::endl;
     
     // Запрос параметров области
     double R, r;
-    std::cout << "Enter the large radius of the torus (R): ";
+    std::cout << "Enter major torus radius (R): ";
     std::cin >> R;
-    std::cout << "Enter the small radius of the torus (r): ";
+    std::cout << "Enter minor torus radius (r): ";
     std::cin >> r;
     
+    // Создание генератора с пользовательскими параметрами
+    TorusPointGenerator generator;
     try {
         generator.setParameters(R, r);
     } catch (const std::invalid_argument& e) {
         std::cerr << "Error: " << e.what() << std::endl;
-        std::cerr << "Default values are used: R=5.0, r=2.0" << std::endl;
+        std::cerr << "Program terminated." << std::endl;
+        return 1;
     }
     
     // Вывод параметров области
-    std::cout << "\nArea Parameters: " << generator.getParameters() << std::endl;
+    std::cout << "\nRegion parameters: " << generator.getParameters() << std::endl;
     
     // Основной цикл меню
     do {
@@ -43,17 +47,27 @@ int main() {
             case 1: {
                 // Заполнение массива случайными точками
                 int K;
-                std::cout << "Enter the number of points: ";
+                std::cout << "Enter number of points: ";
                 std::cin >> K;
                 
                 if (K < 1) {
-                    std::cout << "Incorrect quantity!" << std::endl;
+                    std::cout << "Invalid number!" << std::endl;
                     break;
                 }
                 
-                points.clear();
+                // Освобождаем старую память, если была выделена
+                if (points != nullptr) {
+                    delete[] points;
+                }
+                
+                // Выделяем память под массив точек
+                points = new point3d[K];
+                arraySize = K;
+                pointCount = K;
+                
+                // Заполняем массив случайными точками
                 for (int i = 0; i < K; ++i) {
-                    points.push_back(generator.rnd());
+                    points[i] = generator.rnd();
                 }
                 std::cout << "Generated " << K << " points." << std::endl;
                 break;
@@ -61,39 +75,39 @@ int main() {
                 
             case 2: {
                 // Показать i-ю точку
-                if (points.empty()) {
-                    std::cout << "Massive is empty" << std::endl;
+                if (points == nullptr || pointCount == 0) {
+                    std::cout << "Array is empty!" << std::endl;
                     break;
                 }
                 
                 int index;
-                std::cout << "Enter the point's index (0-" << points.size() - 1 << "): ";
+                std::cout << "Enter point index (0-" << pointCount - 1 << "): ";
                 std::cin >> index;
                 
-                if (index >= 0 && index < points.size()) {
+                if (index >= 0 && index < pointCount) {
                     std::cout << "Point " << index << ": ";
                     points[index].print();
                 } else {
-                    std::cout << "Incorrect index!" << std::endl;
+                    std::cout << "Invalid index!" << std::endl;
                 }
                 break;
             }
                 
             case 3: {
                 // Показать координату точки
-                if (points.empty()) {
-                    std::cout << "Massive is empty!" << std::endl;
+                if (points == nullptr || pointCount == 0) {
+                    std::cout << "Array is empty!" << std::endl;
                     break;
                 }
                 
                 int index;
                 char coord;
-                std::cout << "Enter the point's index (0-" << points.size() - 1 << "): ";
+                std::cout << "Enter point index (0-" << pointCount - 1 << "): ";
                 std::cin >> index;
-                std::cout << "Select a coordinate (x, y, z): ";
+                std::cout << "Choose coordinate (x, y, z): ";
                 std::cin >> coord;
                 
-                if (index >= 0 && index < points.size()) {
+                if (index >= 0 && index < pointCount) {
                     switch (coord) {
                         case 'x':
                             std::cout << "X = " << points[index].getBackX() << std::endl;
@@ -105,10 +119,10 @@ int main() {
                             std::cout << "Z = " << points[index].getBackZ() << std::endl;
                             break;
                         default:
-                            std::cout << "Incorrect coordinate!" << std::endl;
+                            std::cout << "Invalid coordinate!" << std::endl;
                     }
                 } else {
-                    std::cout << "Incorrect index!" << std::endl;
+                    std::cout << "Invalid index!" << std::endl;
                 }
                 break;
             }
@@ -116,25 +130,58 @@ int main() {
             case 4: {
                 // Добавление точки вручную
                 double x, y, z;
-                std::cout << "Enter the coordinates of the point:" << std::endl;
+                std::cout << "Enter point coordinates:" << std::endl;
                 std::cout << "X: "; std::cin >> x;
                 std::cout << "Y: "; std::cin >> y;
                 std::cout << "Z: "; std::cin >> z;
                 
-                points.push_back(point3d(x, y, z));
-                std::cout << "The point has been added. Total points: " << points.size() << std::endl;
+                // Проверяем, есть ли место в массиве
+                if (pointCount < arraySize) {
+                    // Есть место - добавляем
+                    points[pointCount] = point3d(x, y, z);
+                    pointCount++;
+                } else {
+                    // Нужно перевыделить память
+                    int newSize = (arraySize == 0) ? 1 : arraySize * 2;
+                    if (newSize > 10000) newSize = 10000;
+                    
+                    point3d* newPoints = new point3d[newSize];
+                    
+                    // Копируем старые точки
+                    for (int i = 0; i < pointCount; i++) {
+                        newPoints[i] = points[i];
+                    }
+                    
+                    // Добавляем новую точку
+                    newPoints[pointCount] = point3d(x, y, z);
+                    pointCount++;
+                    arraySize = newSize;
+                    
+                    // Освобождаем старую память и присваиваем новый указатель
+                    if (points != nullptr) {
+                        delete[] points;
+                    }
+                    points = newPoints;
+                }
+                
+                std::cout << "Point added. Total points: " << pointCount << std::endl;
                 break;
             }
                 
             case 5: {
                 // Запись массива в файл
+                if (points == nullptr || pointCount == 0) {
+                    std::cout << "Array is empty!" << std::endl;
+                    break;
+                }
+                
                 std::ofstream file("points.txt");
                 if (file.is_open()) {
-                    for (const auto& p : points) {
-                        file << p.x << " " << p.y << " " << p.z << std::endl;
+                    for (int i = 0; i < pointCount; i++) {
+                        file << points[i].x << " " << points[i].y << " " << points[i].z << std::endl;
                     }
                     file.close();
-                    std::cout << "The array is written to a file points.txt" << std::endl;
+                    std::cout << "Array written to file points.txt" << std::endl;
                 } else {
                     std::cerr << "File opening error!" << std::endl;
                 }
@@ -160,17 +207,22 @@ int main() {
             }
                 
             case 0: {
-                std::cout << "Exiting the program." << std::endl;
+                std::cout << "Program exit." << std::endl;
                 break;
             }
                 
             default: {
-                std::cout << "Wrong choice!" << std::endl;
+                std::cout << "Invalid choice!" << std::endl;
                 break;
             }
         }
         
     } while (choice != 0);
+    
+    // Освобождаем память перед выходом
+    if (points != nullptr) {
+        delete[] points;
+    }
     
     return 0;
 }
