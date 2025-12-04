@@ -68,22 +68,29 @@ def visualize_points():
     # 3D визуализация
     ax = fig.add_subplot(111, projection='3d')
     
-    # Создание поверхности тора
+    # Создание поверхности тора (границы области)
     X, Y, Z = create_torus_surface(R, r)
     
-    # Отображение поверхности (полупрозрачной)
-    ax.plot_surface(X, Y, Z, alpha=0.3, color='blue', rstride=1, cstride=1, label='Поверхность тора')
     
-    # Отображение точек
+    # Отображение всех точек одинаково
     if len(points) > 0:
         ax.scatter(points[:, 0], points[:, 1], points[:, 2], 
-                   c='red', s=10, alpha=0.6, label='Сгенерированные точки')
+                   c='red', s=5, alpha=0.3, label='Сгенерированные точки')
     
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
-    ax.set_title(f'Точки в верхней половине тора (R={R}, r={r})')
+    ax.set_title(f'Точки в верхней половине тора (R={R}, r={r})\nТочки заполняют весь объем')
     ax.legend()
+    
+    # Установим одинаковый масштаб по осям
+    max_range = np.array([X.max()-X.min(), Y.max()-Y.min(), Z.max()-Z.min()]).max() / 2.0
+    mid_x = (X.max()+X.min()) * 0.5
+    mid_y = (Y.max()+Y.min()) * 0.5
+    mid_z = (Z.max()+Z.min()) * 0.5
+    ax.set_xlim(mid_x - max_range, mid_x + max_range)
+    ax.set_ylim(mid_y - max_range, mid_y + max_range)
+    ax.set_zlim(mid_z - max_range, mid_z + max_range)
     
     plt.show()
     
